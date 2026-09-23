@@ -140,7 +140,7 @@ export default class PrinterStatusCard extends Mixins(StateMixin) {
   }
 
   handlePrint (filename: string) {
-    if (this.$typedState.printer.printer.mmu?.enabled === true) {
+    if (this.$typedState.printer.printer.box != null || this.$typedState.printer.printer.mmu?.enabled === true) {
       // Always intercept print to show CFS mapping dialog
       this.cfsMatchDialogState = {
         open: true,

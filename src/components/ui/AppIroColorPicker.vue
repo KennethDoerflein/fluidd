@@ -24,7 +24,7 @@ export default class AppColorPicker extends Vue {
 
   colorPicker: IroColorPicker | null = null
 
-  @Watch('value')
+  @Watch('inputValue')
   onValue (value: string) {
     if (value && this.colorPicker) {
       this.colorPicker.color.set(value)

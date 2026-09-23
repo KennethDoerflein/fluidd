@@ -942,7 +942,7 @@ export default class FileSystem extends Mixins(StateMixin, FilesMixin, ServicesM
 
     const filename = file.path ? `${file.path}/${file.filename}` : file.filename
 
-    if (this.$typedState.printer.printer.mmu?.enabled === true) {
+    if (this.$typedState.printer.printer.box != null || this.$typedState.printer.printer.mmu?.enabled === true) {
       // Always intercept print to show CFS mapping dialog
       this.cfsMatchDialogState = {
         open: true,
