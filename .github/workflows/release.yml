@@ -68,39 +68,15 @@ jobs:
           version: ${{ steps.tag_name.outputs.current_version }}
           path: ./CHANGELOG.md
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Release Firmware Binaries
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          files: ./fluidd.zip
           body: |
             ${{ steps.changelog.outputs.changes }}
-          draft: true
-          prerelease: false
-
-      - name: Upload Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./fluidd.zip
-          asset_name: fluidd.zip
-          asset_content_type: application/zip
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: fluidd-${{ github.sha }}.zip
           path: ./dist
-
-      - name: Publish Release
-        uses: eregon/publish-release@v1.0.6
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          release_id: ${{ steps.create_release.outputs.id }}
