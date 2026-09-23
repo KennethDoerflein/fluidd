@@ -121,7 +121,7 @@
   "license": "GPL-3.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fluidd-core/fluidd.git"
+    "url": "git+https://github.com/KennethDoerflein/fluidd.git"
   },
   "engines": {
     "node": "^22.12.0 || ^24"
