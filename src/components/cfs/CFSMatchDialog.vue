@@ -199,7 +199,6 @@ export default class CFSMatchDialog extends Vue {
       await this.fetchLaneData()
       this.calculateDefaults()
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error('[CFSMatchDialog] Failed to load data:', e)
     } finally {
       this.loading = false
@@ -247,7 +246,7 @@ export default class CFSMatchDialog extends Vue {
       const laneJson = await laneResp.json() as any
       const laneData = laneJson.result?.value || laneJson.result || {}
 
-      for (const [key, lane] of Object.entries(laneData)) {
+      for (const lane of Object.values(laneData)) {
         const l = lane as any
         if (l.tool !== undefined && l.tool !== null) {
           this.physicalSlots.push({
@@ -271,7 +270,7 @@ export default class CFSMatchDialog extends Vue {
         const extSlot = boxStatus.external_spool
         this.physicalSlots.push({
           slot: typeof extSlot === 'number' ? extSlot : 4,
-          label: `External Spool`,
+          label: 'External Spool',
           color: '#808080',
           material: 'Unknown'
         })
@@ -340,7 +339,6 @@ export default class CFSMatchDialog extends Vue {
       // Start the print
       await SocketActions.printerPrintStart(this.filename)
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error('[CFSMatchDialog] Failed to start print:', e)
     }
 
