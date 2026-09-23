@@ -6,6 +6,11 @@
     :collapsable="collapsable"
     layout-path="dashboard.printer-status-card"
   >
+    <c-f-s-match-dialog
+      v-if="cfsMatchDialogState.open"
+      v-model="cfsMatchDialogState.open"
+      :filename="cfsMatchDialogState.filename"
+    />
     <template #title="{inLayout}">
       <v-tabs
         v-if="!inLayout"
@@ -77,16 +82,23 @@ import StatusTab from './StatusTab.vue'
 import ReprintTab from './ReprintTab.vue'
 import type { TimeEstimates } from '@/store/printer/types'
 import getFilePaths from '@/util/get-file-paths'
+import CFSMatchDialog from '@/components/cfs/CFSMatchDialog.vue'
 
 @Component({
   components: {
     StatusControls,
     StatusTab,
-    ReprintTab
+    ReprintTab,
+    CFSMatchDialog
   }
 })
 export default class PrinterStatusCard extends Mixins(StateMixin) {
   tab = 0
+
+  cfsMatchDialogState = {
+    open: false,
+    filename: ''
+  }
 
   // If the user has no history plugin, and there's no print running..
   // then hide the collapse control.
@@ -128,6 +140,13 @@ export default class PrinterStatusCard extends Mixins(StateMixin) {
   }
 
   handlePrint (filename: string) {
+    // Always intercept print to show CFS mapping dialog
+    this.cfsMatchDialogState = {
+      open: true,
+      filename
+    }
+    return
+
     if (this.$typedState.printer.printer.mmu?.enabled === true) {
       const { rootPath, filename: filenameOnly } = getFilePaths(filename, 'gcodes')
       const fileWithMeta = this.$typedGetters['files/getFile'](rootPath, filenameOnly)
