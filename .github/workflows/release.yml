@@ -55,25 +55,10 @@ jobs:
           cd ./dist
           zip -r ../fluidd.zip ./
 
-      - name: Get version from tag
-        id: tag_name
-        run: |
-          echo "current_version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
-      - name: Read ChangeLog
-        uses: mindsers/changelog-reader-action@v2.2.3
-        id: changelog
-        with:
-          validation_depth: 1
-          version: ${{ steps.tag_name.outputs.current_version }}
-          path: ./CHANGELOG.md
-
       - name: Release Firmware Binaries
         uses: softprops/action-gh-release@v2
         with:
           files: ./fluidd.zip
-          body: |
-            ${{ steps.changelog.outputs.changes }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
