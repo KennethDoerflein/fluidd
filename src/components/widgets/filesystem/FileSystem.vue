@@ -951,7 +951,7 @@ export default class FileSystem extends Mixins(StateMixin, FilesMixin, ServicesM
 
     if (this.$typedState.printer.printer.mmu?.enabled === true) {
       if ('referenced_tools' in file) {
-        const mmuPrint = (file.referenced_tools?.length ?? 1) > 1 || this.$typedState.printer.printer.mmu?.gate !== -2
+        const mmuPrint = ((file as any).referenced_tools?.length ?? 1) > 1 || this.$typedState.printer.printer.mmu?.gate !== -2
         if (mmuPrint) {
           this.$typedCommit('mmu/setDialogState', {
             show: true,
