@@ -942,25 +942,13 @@ export default class FileSystem extends Mixins(StateMixin, FilesMixin, ServicesM
 
     const filename = file.path ? `${file.path}/${file.filename}` : file.filename
 
-    // Always intercept print to show CFS mapping dialog
-    this.cfsMatchDialogState = {
-      open: true,
-      filename
-    }
-    return
-
     if (this.$typedState.printer.printer.mmu?.enabled === true) {
-      if ('referenced_tools' in file) {
-        const mmuPrint = ((file as any).referenced_tools?.length ?? 1) > 1 || this.$typedState.printer.printer.mmu?.gate !== -2
-        if (mmuPrint) {
-          this.$typedCommit('mmu/setDialogState', {
-            show: true,
-            filename
-          })
-
-          return
-        }
+      // Always intercept print to show CFS mapping dialog
+      this.cfsMatchDialogState = {
+        open: true,
+        filename
       }
+      return
     }
 
     const spoolmanSupported: boolean = this.$typedGetters['spoolman/getAvailable']

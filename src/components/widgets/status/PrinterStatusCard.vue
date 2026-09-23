@@ -140,29 +140,13 @@ export default class PrinterStatusCard extends Mixins(StateMixin) {
   }
 
   handlePrint (filename: string) {
-    // Always intercept print to show CFS mapping dialog
-    this.cfsMatchDialogState = {
-      open: true,
-      filename
-    }
-    return
-
     if (this.$typedState.printer.printer.mmu?.enabled === true) {
-      const { rootPath, filename: filenameOnly } = getFilePaths(filename, 'gcodes')
-      const fileWithMeta = this.$typedGetters['files/getFile'](rootPath, filenameOnly)
-
-      if (fileWithMeta != null && 'referenced_tools' in (fileWithMeta as any)) {
-        const mmuPrint = ((fileWithMeta as any).referenced_tools?.length ?? 1) > 1 || this.$typedState.printer.printer.mmu!.gate !== -2
-
-        if (mmuPrint) {
-          this.$typedCommit('mmu/setDialogState', {
-            show: true,
-            filename
-          })
-
-          return
-        }
+      // Always intercept print to show CFS mapping dialog
+      this.cfsMatchDialogState = {
+        open: true,
+        filename
       }
+      return
     }
 
     const spoolmanSupported: boolean = this.$typedGetters['spoolman/getAvailable']
