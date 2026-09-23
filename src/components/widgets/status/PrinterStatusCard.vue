@@ -151,8 +151,8 @@ export default class PrinterStatusCard extends Mixins(StateMixin) {
       const { rootPath, filename: filenameOnly } = getFilePaths(filename, 'gcodes')
       const fileWithMeta = this.$typedGetters['files/getFile'](rootPath, filenameOnly)
 
-      if (fileWithMeta != null && 'referenced_tools' in fileWithMeta) {
-        const mmuPrint = (fileWithMeta.referenced_tools?.length ?? 1) > 1 || this.$typedState.printer.printer.mmu.gate !== -2
+      if (fileWithMeta != null && 'referenced_tools' in (fileWithMeta as any)) {
+        const mmuPrint = ((fileWithMeta as any).referenced_tools?.length ?? 1) > 1 || this.$typedState.printer.printer.mmu!.gate !== -2
 
         if (mmuPrint) {
           this.$typedCommit('mmu/setDialogState', {
