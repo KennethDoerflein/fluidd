@@ -225,6 +225,88 @@ app:
       moonraker_config: 'https://moonraker.readthedocs.io/en/latest/configuration/#%{hash}'
       moonraker_telegram_bot_config: 'https://github.com/nlef/moonraker-telegram-bot/wiki/Sample-config#%{hash}'
       crowsnest_config: 'https://crowsnest.mainsail.xyz/configuration/%{hash}-section'
+  filament_box:
+    btn:
+      add: Add
+      clear_spool: Clear spool
+      load: Load
+      new_material: New material
+      select_spool: Select spool
+      unload: Unload
+    color:
+      black: Black
+      blue: Blue
+      brown: Brown
+      gray: Gray
+      green: Green
+      natural: Natural
+      orange: Orange
+      pink: Pink
+      purple: Purple
+      red: Red
+      white: White
+      yellow: Yellow
+    label:
+      assigned_spool: Assigned spool
+      brand: Brand
+      buffer: Buffer
+      box_number: Box {number}
+      clog_detection: Clog detection
+      color: Color
+      encoder: Encoder
+      environment: Temperature {temperature}, humidity {humidity}
+      external: External
+      flush_temperature: Flush temperature
+      material: Material
+      mode: Mode
+      name: Name
+      no_spool_selected: No Spoolman spool selected
+      none: None
+      printhead: Printhead
+      rfid_insert_reading: Read RFID on insertion
+      rfid_insert_reading_description: >-
+        When a spool is inserted into the CFS, read its RFID tag once to populate its saved filament details. Filament must be unloaded.
+      rfid_startup_reading: Read RFID after Klipper starts
+      rfid_startup_reading_description: >-
+        When Klipper starts, read present spools that the CFS internally has no RFID data for. Consequently, a printer power cycle spins every occupied slot. The {only} reason to enable this is RFID remaining %. Filament must be unloaded.
+      runout: Runout
+      runout_swap: Automatic runout swap
+      runout_swap_description: >-
+        Switch to another spool when the current one runs out (same material and color).
+      unload_after_print: Unload after print
+      unload_after_print_description: Unload filament after a completed print.
+      slot: Slot
+      slot_summary: '{slot}, {state}, {material}'
+      spool_id: 'Spool #{id}'
+      spoolman: Spoolman
+      status: Status
+    msg:
+      unknown_material: >-
+        {material} is not in the filament box material catalog. Add it before assigning this spool.
+      waiting_for_data: Waiting for filament box data
+    state:
+      active: Active
+      connecting: Connecting
+      disabled: Disabled
+      empty: Empty
+      full: Full
+      inactive: Inactive
+      loaded: Loaded
+      middle: Middle
+      not_triggered: Not triggered
+      ready: Ready
+      triggered: Triggered
+      unknown: Unknown
+      unloaded: Unloaded
+    title:
+      edit_slot: Edit {slot}
+      filament_box: Filament Box
+      new_filament: New filament material
+      settings: Filament Box Settings
+    validation:
+      known_material: Select a material from the catalog
+      required: Required
+      temperature_range: Enter a temperature from 170°C to 350°C
   gcode:
     btn:
       load_current_file: Load Current File
