@@ -266,6 +266,7 @@ app:
       no_spool_selected: No Spoolman spool selected
       none: None
       printhead: Printhead
+      print_routing: Print slots
       reset_all_slots_description: Clear all CFS and external slot profiles.
       rfid_insert_reading: Read RFID on insertion
       rfid_insert_reading_description: >-

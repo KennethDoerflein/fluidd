@@ -93,8 +93,8 @@
               class="cfs-mapping-list mb-4"
             >
               <div
-                v-for="(tool, i) in slicerTools"
-                :key="i"
+                v-for="tool in slicerTools"
+                :key="tool.toolIndex"
                 class="cfs-row d-flex align-center"
               >
                 <!-- Left: slicer tool -->
@@ -105,7 +105,7 @@
                   />
                   <div class="cfs-tool-labels">
                     <div class="text-body-2 font-weight-bold">
-                      Tool {{ i }}
+                      Tool {{ tool.toolIndex }}
                     </div>
                     <div class="text-caption text--secondary">
                       {{ tool.material }}
@@ -116,7 +116,7 @@
                 <!-- Right: physical slot selector -->
                 <div class="d-flex align-center cfs-row-right">
                   <v-select
-                    :value="toolMapping[i]"
+                    :value="toolMapping[tool.toolIndex]"
                     :items="physicalSlotItems"
                     item-text="label"
                     item-value="slot"
@@ -125,7 +125,7 @@
                     hide-details
                     placeholder="Select slot…"
                     class="cfs-select"
-                    @input="updateMapping(i, $event)"
+                    @input="updateMapping(tool.toolIndex, $event)"
                   >
                     <template #item="{ item }">
                       <span
@@ -265,6 +265,7 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { SocketActions } from '@/api/socketActions'
 
 interface SlicerTool {
+  toolIndex: number
   color: string
   material: string
 }
@@ -313,9 +314,9 @@ export default class CFSMatchDialog extends Vue {
     if (!this.enableCfs) return []
 
     const out: Array<{ tool: number; slicerMaterial: string; slotMaterial: string }> = []
-    for (let i = 0; i < this.slicerTools.length; i++) {
-      const slicerMat = this.slicerTools[i].material
-      const slotId = this.toolMapping[i]
+    for (const tool of this.slicerTools) {
+      const slicerMat = tool.material
+      const slotId = this.toolMapping[tool.toolIndex]
       const physSlot = this.physicalSlots.find(s => s.slot === slotId)
       if (!physSlot) continue
       if (
@@ -323,7 +324,7 @@ export default class CFSMatchDialog extends Vue {
         physSlot.material.toLowerCase() === 'unknown'
       ) continue
       if (!this.materialCompatible(slicerMat, physSlot.material)) {
-        out.push({ tool: i, slicerMaterial: slicerMat, slotMaterial: physSlot.material })
+        out.push({ tool: tool.toolIndex, slicerMaterial: slicerMat, slotMaterial: physSlot.material })
       }
     }
     return out
@@ -332,7 +333,7 @@ export default class CFSMatchDialog extends Vue {
   get allToolsMapped (): boolean {
     if (!this.enableCfs) return true
     if (this.slicerTools.length === 0) return true
-    return this.slicerTools.every((_, i) => this.toolMapping[i] != null && this.toolMapping[i] !== undefined)
+    return this.slicerTools.every(tool => this.toolMapping[tool.toolIndex] != null && this.toolMapping[tool.toolIndex] !== undefined)
   }
 
   get hasSharedSlots (): boolean {
@@ -393,10 +394,22 @@ export default class CFSMatchDialog extends Vue {
     while (types.length < colors.length) types.push('Unknown')
     while (colors.length < types.length) colors.push('#FFFFFF')
 
-    this.slicerTools = colors.map((c, i) => ({
-      color: this.normalizeHex(c, '#FFFFFF'),
-      material: types[i] || 'Unknown'
-    }))
+    const referencedTools: number[] = Array.isArray(meta.referenced_tools)
+      ? meta.referenced_tools
+        .map((value: unknown) => Number(value))
+        .filter((index: number) => Number.isInteger(index) && index >= 0)
+      : []
+    const toolIndices: number[] = referencedTools.length > 0
+      ? Array.from(new Set<number>(referencedTools))
+      : colors.map((_, index) => index)
+
+    this.slicerTools = toolIndices
+      .filter(index => index < colors.length || index < types.length)
+      .map(toolIndex => ({
+        toolIndex,
+        color: this.normalizeHex(colors[toolIndex] ?? '#FFFFFF', '#FFFFFF'),
+        material: types[toolIndex] || 'Unknown'
+      }))
 
     // Thumbnail — largest available
     this.thumbnailUrl = this.buildThumbnailUrl(this.filename, meta.thumbnails)
@@ -597,8 +610,8 @@ export default class CFSMatchDialog extends Vue {
     const newMapping: Record<number, number> = {}
     const usedSlots = new Set<number>()
 
-    for (let i = 0; i < this.slicerTools.length; i++) {
-      const tool = this.slicerTools[i]
+    for (const tool of this.slicerTools) {
+      const toolIndex = tool.toolIndex
       const toolRgb = this.hexToRgb(tool.color)
       const available = this.physicalSlots.filter(s => !usedSlots.has(s.slot))
       let bestSlot: number | null = null
@@ -660,7 +673,7 @@ export default class CFSMatchDialog extends Vue {
       }
 
       if (bestSlot !== null) {
-        this.$set(newMapping, i, bestSlot)
+        this.$set(newMapping, toolIndex, bestSlot)
         usedSlots.add(bestSlot)
       }
     }
@@ -678,10 +691,10 @@ export default class CFSMatchDialog extends Vue {
     try {
       if (this.slicerTools.length > 0) {
         const parts: string[] = []
-        for (let i = 0; i < this.slicerTools.length; i++) {
-          const slot = this.enableCfs ? this.toolMapping[i] : (this.externalSlot ?? 4)
+        for (const tool of this.slicerTools) {
+          const slot = this.enableCfs ? this.toolMapping[tool.toolIndex] : (this.externalSlot ?? 4)
           if (slot != null) {
-            parts.push(`T${i}=${slot}`)
+            parts.push(`T${tool.toolIndex}=${slot}`)
           }
         }
         if (parts.length > 0) {

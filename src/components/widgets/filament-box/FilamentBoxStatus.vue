@@ -60,6 +60,23 @@
       </v-chip>
     </div>
 
+    <div
+      v-if="routingEntries.length > 0"
+      class="print-routing"
+      data-test="filament-box-print-routing"
+    >
+      <span class="print-routing-label">{{ $t('app.filament_box.label.print_routing') }}</span>
+      <v-chip
+        v-for="entry in routingEntries"
+        :key="entry.tool"
+        x-small
+        outlined
+        class="print-routing-chip"
+      >
+        {{ entry.label }}
+      </v-chip>
+    </div>
+
     <div class="load-path-diagram">
       <div
         class="path-node source"
@@ -176,6 +193,25 @@ export default class FilamentBoxStatus extends Vue {
 
   get modeDetail (): string {
     return formatStateText(this.box?.state ?? null, this.box?.state_code ?? null, true)
+  }
+
+  get routingEntries (): Array<{ tool: number; label: string }> {
+    const routing = this.box?.tool_routing
+    if (routing == null || typeof routing !== 'object') return []
+
+    return Object.entries(routing)
+      .map(([tool, slot]) => ({
+        tool: Number(tool),
+        label: `T${tool} -> ${this.slotLabel(Number(slot))}`
+      }))
+      .sort((a, b) => a.tool - b.tool)
+  }
+
+  slotLabel (slot: number): string {
+    const slotData = (this.box?.slots ?? []).find((item: any) => item.index === slot)
+    if (slotData?.external === true) return `External T${slot}`
+    const letter = slot < 26 ? String.fromCharCode(65 + (slot % 4)) : String(slot)
+    return `CFS ${letter} (T${slot})`
   }
 
   get statusChipClasses () {
@@ -325,6 +361,25 @@ export default class FilamentBoxStatus extends Vue {
 
 .status-chip-value {
   font-weight: 800;
+}
+
+.print-routing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.print-routing-label {
+  color: var(--v-secondary-lighten1);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.print-routing-chip {
+  color: var(--v-info-base);
+  border-color: rgba(33, 150, 243, 0.35) !important;
 }
 
 .mode-chip {
