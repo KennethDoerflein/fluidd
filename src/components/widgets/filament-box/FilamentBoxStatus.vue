@@ -113,10 +113,17 @@
           class="filament-action-btn"
           x-small
           outlined
+          color="warning"
           :disabled="!canUnload"
           data-test="filament-box-unload"
           @click="$emit('unload')"
         >
+          <v-icon
+            left
+            x-small
+          >
+            $mmuUnload
+          </v-icon>
           {{ $t('app.filament_box.btn.unload') }}
         </v-btn>
       </div>
@@ -211,9 +218,15 @@ export default class FilamentBoxStatus extends Vue {
   }
 
   get sourceLabel (): string {
-    return !this.dataReady || this.loadPath?.source_slot == null || this.loadPath.source_slot < 0
-      ? '--'
-      : `T${this.loadPath.source_slot}`
+    if (!this.dataReady || this.loadPath?.source_slot == null || this.loadPath.source_slot < 0) {
+      return '--'
+    }
+    const slot = this.loadPath.source_slot
+    if (slot === 4) {
+      return 'Ext (T4)'
+    }
+    const letter = slot < 26 ? String.fromCharCode(65 + (slot % 4)) : `${slot}`
+    return `CFS ${letter} (T${slot})`
   }
 
   get encoderLabel (): string {
@@ -282,6 +295,8 @@ export default class FilamentBoxStatus extends Vue {
   display: inline-flex;
   align-items: center;
   max-width: 100%;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
 
   ::v-deep .v-chip__content {
     display: inline-flex;
@@ -290,11 +305,13 @@ export default class FilamentBoxStatus extends Vue {
   }
 
   &.ok {
-    color: var(--v-success-base);
+    color: #81c784;
+    border-color: rgba(76, 175, 80, 0.35) !important;
   }
 
   &.issue {
-    color: var(--v-error-base);
+    color: #e57373;
+    border-color: rgba(244, 67, 54, 0.35) !important;
   }
 }
 
@@ -303,6 +320,7 @@ export default class FilamentBoxStatus extends Vue {
   font-size: 0.62rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .status-chip-value {
@@ -324,11 +342,13 @@ export default class FilamentBoxStatus extends Vue {
 
 .clog-detection-chip {
   &.active {
-    color: var(--v-success-base);
+    color: #81c784;
+    border-color: rgba(76, 175, 80, 0.35) !important;
   }
 
   &.triggered {
-    color: var(--v-error-base);
+    color: #e57373;
+    border-color: rgba(244, 67, 54, 0.35) !important;
   }
 
   &.inactive,
@@ -346,22 +366,22 @@ export default class FilamentBoxStatus extends Vue {
 }
 
 .clog-detection-chip.active .clog-detection-dot {
-  background: var(--v-success-base);
+  background: #81c784;
 }
 
 .clog-detection-chip.triggered .clog-detection-dot {
-  background: var(--v-error-base);
+  background: #e57373;
 }
 
 .load-path-diagram {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
-  padding: 9px;
-  background: #8080800f;
-  border: 1px solid #80808038;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 8px;
 }
 
@@ -371,17 +391,19 @@ export default class FilamentBoxStatus extends Vue {
   justify-content: center;
   min-width: 0;
   height: 58px;
-  padding: 7px 8px;
-  background: #80808012;
-  border: 1px solid #8080803d;
-  border-radius: 7px;
+  padding: 7px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  transition: all 0.15s ease;
 
   &.active {
-    background: #ff980014;
-    border-color: #ff9800b8;
+    background: rgba(255, 152, 0, 0.12);
+    border-color: rgba(255, 152, 0, 0.6);
+    box-shadow: 0 0 10px rgba(255, 152, 0, 0.15);
 
     .path-node-value {
-      color: var(--v-warning-base);
+      color: var(--v-warning-base, #ff9800);
     }
   }
 }
@@ -400,6 +422,7 @@ export default class FilamentBoxStatus extends Vue {
   font-weight: 700;
   line-height: 1.15;
   text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .path-node-value {
@@ -419,10 +442,11 @@ export default class FilamentBoxStatus extends Vue {
   display: flex;
   justify-content: flex-end;
   min-width: 0;
+  margin-top: 2px;
 }
 
 .filament-action-btn {
-  min-width: 64px;
+  min-width: 72px;
   height: 24px !important;
 }
 </style>

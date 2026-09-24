@@ -13,7 +13,10 @@
       @click="$emit('edit', slotData.index)"
     />
     <div class="slot-top">
-      <span class="slot-id">T{{ slotData.index }}</span>
+      <div class="slot-title-wrap">
+        <span class="slot-cfs-tag font-weight-bold">{{ slotHeaderTitle }}</span>
+        <span class="slot-tool-tag text-caption text--secondary font-weight-medium">T{{ slotData.index }}</span>
+      </div>
       <span
         class="slot-token"
         :class="slotData.state"
@@ -26,15 +29,15 @@
         class="slot-color"
         :style="{ backgroundColor: slotData.color }"
       />
-      <span class="slot-material-copy">
+      <div class="slot-material-copy">
+        <span class="slot-material font-weight-bold">{{ slotData.material }}</span>
         <span
           v-if="slotData.brand || slotData.name"
-          class="slot-brand"
+          class="slot-brand text-caption text--secondary"
         >
           {{ profileName }}
         </span>
-        <span class="slot-material">{{ slotData.material }}</span>
-      </span>
+      </div>
     </div>
     <div
       v-if="slotData.interactive"
@@ -54,9 +57,16 @@
         class="slot-load-btn"
         x-small
         outlined
+        color="primary"
         data-test="filament-box-slot-load"
         @click.stop="$emit('load', slotData.index)"
       >
+        <v-icon
+          left
+          x-small
+        >
+          $mmuLoad
+        </v-icon>
         {{ $t('app.filament_box.btn.load') }}
       </v-btn>
     </div>
@@ -74,6 +84,13 @@ export default class FilamentBoxSlot extends Vue {
 
   @Prop({ type: Boolean, default: false })
   readonly loadBlocked!: boolean
+
+  get slotHeaderTitle (): string {
+    if (this.slotData.external) {
+      return 'Ext'
+    }
+    return `CFS ${String.fromCharCode(65 + (this.slotData.index % 4))}`
+  }
 
   get slotClasses () {
     return {
@@ -95,7 +112,7 @@ export default class FilamentBoxSlot extends Vue {
 
   get slotAriaLabel (): string {
     return String(this.$t('app.filament_box.label.slot_summary', {
-      slot: `T${this.slotData.index}`,
+      slot: `${this.slotHeaderTitle} (T${this.slotData.index})`,
       state: this.stateLabel,
       material: this.slotData.material
     }))
@@ -109,27 +126,39 @@ export default class FilamentBoxSlot extends Vue {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-height: 118px;
-  padding: 10px;
-  background: #80808012;
-  border: 1px solid #8080803d;
+  min-height: 124px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  transition: background-color 0.16s, border-color 0.16s;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 
   &:hover,
   &:focus-within {
-    background: #8080801f;
-    border-color: #8080807a;
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.2);
   }
 
   &.loaded {
-    border-color: var(--v-warning-base);
-    box-shadow: inset 0 0 0 1px var(--v-warning-base);
+    background: rgba(255, 193, 7, 0.06);
+    border-color: var(--v-warning-base, #ffc107);
+    box-shadow: 0 0 12px rgba(255, 193, 7, 0.15), inset 0 0 0 1px var(--v-warning-base, #ffc107);
+  }
+
+  &.external:not(.loaded) {
+    border-color: rgba(33, 150, 243, 0.25);
+    background: rgba(33, 150, 243, 0.04);
+
+    &:hover,
+    &:focus-within {
+      border-color: rgba(33, 150, 243, 0.45);
+      background: rgba(33, 150, 243, 0.07);
+    }
   }
 
   &.disabled:hover {
-    background: #80808012;
-    border-color: #8080803d;
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
   }
 }
 
@@ -152,21 +181,34 @@ export default class FilamentBoxSlot extends Vue {
 .slot-top {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
 }
 
-.slot-id {
-  font-size: 0.78rem;
-  font-weight: 700;
+.slot-title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.slot-cfs-tag {
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+.slot-tool-tag {
+  font-size: 0.7rem;
 }
 
 .slot-token {
-  max-width: 84px;
-  padding: 2px 6px;
+  max-width: 86px;
+  padding: 2px 7px;
   font-size: 0.62rem;
   font-weight: 700;
   line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
   text-overflow: ellipsis;
   white-space: nowrap;
   border: 1px solid;
@@ -174,39 +216,50 @@ export default class FilamentBoxSlot extends Vue {
   overflow: hidden;
 
   &.loaded {
-    color: var(--v-warning-base);
-    background: #ffc1071f;
+    color: #ffb74d;
+    border-color: rgba(255, 183, 77, 0.45);
+    background: rgba(255, 183, 77, 0.15);
   }
 
   &.ready {
-    color: var(--v-success-base);
-    background: #4caf501a;
+    color: #81c784;
+    border-color: rgba(129, 199, 132, 0.45);
+    background: rgba(129, 199, 132, 0.12);
   }
 
   &.unloaded {
-    color: var(--v-error-base);
-    background: #f4433614;
+    color: #e57373;
+    border-color: rgba(229, 115, 115, 0.4);
+    background: rgba(229, 115, 115, 0.1);
   }
 
   &.unknown {
     color: var(--v-secondary-lighten2);
-    background: #80808014;
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
   }
 }
 
 .slot-material-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 22px;
+  gap: 10px;
+  margin-top: 14px;
+  margin-bottom: 8px;
 }
 
 .slot-color {
   flex: none;
   width: 22px;
   height: 22px;
-  border: 1px solid #ffffff61;
   border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease;
+}
+
+.slot-card:hover .slot-color {
+  transform: scale(1.08);
 }
 
 .slot-material-copy {
@@ -224,15 +277,14 @@ export default class FilamentBoxSlot extends Vue {
   line-height: 1.2;
 }
 
-.slot-brand {
-  color: var(--v-secondary-lighten1);
-  font-size: 0.66rem;
-  font-weight: 600;
+.slot-material {
+  font-size: 0.95rem;
+  letter-spacing: -0.2px;
 }
 
-.slot-material {
-  font-size: 1rem;
-  font-weight: 700;
+.slot-brand {
+  font-size: 0.68rem;
+  margin-top: 1px;
 }
 
 .slot-footer {
@@ -253,7 +305,7 @@ export default class FilamentBoxSlot extends Vue {
   gap: 4px;
   width: 100%;
   min-width: 0;
-  max-width: 106px;
+  max-width: 110px;
 
   &.empty {
     visibility: hidden;
@@ -262,7 +314,7 @@ export default class FilamentBoxSlot extends Vue {
 
 .slot-spool-usage-label {
   color: var(--v-secondary-lighten1);
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   font-weight: 700;
   line-height: 1.2;
   overflow: hidden;
@@ -274,7 +326,7 @@ export default class FilamentBoxSlot extends Vue {
   width: 82px;
   max-width: 100%;
   height: 4px;
-  background: #ffffff52;
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   overflow: hidden;
 
@@ -283,13 +335,14 @@ export default class FilamentBoxSlot extends Vue {
     height: 100%;
     background: var(--v-primary-base);
     border-radius: inherit;
+    transition: width 0.25s ease;
   }
 }
 
 .slot-load-btn {
   z-index: 2;
   flex: none;
-  min-width: 54px;
+  min-width: 60px;
   height: 24px !important;
 }
 </style>

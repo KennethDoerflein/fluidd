@@ -125,6 +125,24 @@
                       <span class="text-truncate">{{ item.label }}</span>
                     </template>
                   </v-select>
+                  <v-tooltip top>
+                    <template #activator="{ on, attrs }">
+                      <v-btn
+                        icon
+                        small
+                        class="ml-2 flex-shrink-0"
+                        v-bind="attrs"
+                        :disabled="toolMapping[i] == null"
+                        v-on="on"
+                        @click="clearSlotData(toolMapping[i])"
+                      >
+                        <v-icon small>
+                          $close
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Clear slot metadata</span>
+                  </v-tooltip>
                 </div>
               </div>
             </div>
@@ -368,14 +386,7 @@ export default class CFSMatchDialog extends Vue {
           const slotNum = Number(s.index)
           const mat = typeof s.material === 'string' && s.material.trim() !== '' ? s.material : 'Unknown'
 
-          if (s.external) {
-            this.physicalSlots.push({
-              slot: slotNum,
-              label: 'External Spool',
-              color: this.normalizeHex(s.color),
-              material: mat
-            })
-          } else {
+          if (!s.external && s.present) {
             const letter = slotNum < 26 ? String.fromCharCode(65 + slotNum) : String(slotNum)
             this.physicalSlots.push({
               slot: slotNum,
@@ -385,14 +396,8 @@ export default class CFSMatchDialog extends Vue {
             })
           }
         }
-      } else if (boxStatus?.external_spool != null) {
-        // Fallback if box.slots is missing but external_spool exists
-        this.physicalSlots.push({
-          slot: typeof boxStatus.external_spool === 'number' ? boxStatus.external_spool : 4,
-          label: 'External Spool',
-          color: '#808080',
-          material: 'Unknown'
-        })
+      } else if (boxStatus != null) {
+        // We fetched box status but found no slots
         fetchedFromBox = true
       }
     } catch (e) {
@@ -608,6 +613,22 @@ export default class CFSMatchDialog extends Vue {
 
   cancel () {
     this.$emit('input', false)
+  }
+
+  async clearSlotData (slotId: number) {
+    if (slotId == null) return
+    try {
+      this.loading = true
+      await SocketActions.printerGcodeScript(`_BOX_SLOT_CLEAR SLOT=${slotId}`)
+      // Short delay for Klipper state to update, then refresh the lane data
+      setTimeout(() => {
+        this.loadData()
+      }, 300)
+    } catch (e) {
+      console.error('[CFSMatchDialog] Failed to clear slot:', e)
+    } finally {
+      this.loading = false
+    }
   }
 
   async confirmAndPrint () {

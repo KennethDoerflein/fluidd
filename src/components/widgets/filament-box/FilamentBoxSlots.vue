@@ -129,7 +129,7 @@ export default class FilamentBoxSlots extends Vue {
       bottom: 0;
       right: -4px;
       width: 1px;
-      background: #8080806b;
+      background: rgba(255, 255, 255, 0.08);
       pointer-events: none;
     }
   }

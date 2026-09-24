@@ -2,7 +2,7 @@
   <div>
     <app-dialog
       v-model="open"
-      :title="$t('app.filament_box.title.edit_slot', { slot: `T${normalizedSlotIndex}` })"
+      :title="$t('app.filament_box.title.edit_slot', { slot: slotDisplayTitle })"
       :save-button-disabled="!canSave"
       max-width="640"
       @save="handleSave"
@@ -191,6 +191,13 @@ export default class FilamentBoxSlotDialog extends Mixins(StateMixin) {
 
   get normalizedSlotIndex (): number {
     return this.slotIndex ?? 0
+  }
+
+  get slotDisplayTitle (): string {
+    if (this.normalizedSlotIndex === 4) {
+      return 'External Spool (T4)'
+    }
+    return `CFS Slot ${String.fromCharCode(65 + (this.normalizedSlotIndex % 4))} (T${this.normalizedSlotIndex})`
   }
 
   get normalizedColor (): string {
@@ -394,8 +401,9 @@ export default class FilamentBoxSlotDialog extends Mixins(StateMixin) {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border: 1px solid #8080803d;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
 }
 
@@ -403,7 +411,7 @@ export default class FilamentBoxSlotDialog extends Mixins(StateMixin) {
 .spoolman-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .color-swatches {
@@ -414,15 +422,23 @@ export default class FilamentBoxSlotDialog extends Mixins(StateMixin) {
 .color-swatch {
   width: 28px;
   height: 28px;
-  border-radius: 7px;
-  border: 2px solid #80808059;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   cursor: pointer;
   outline: none;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: scale(1.15);
+    border-color: rgba(255, 255, 255, 0.9);
+  }
 
   &.selected,
   &:focus-visible {
-    border-color: var(--v-primary-base);
-    box-shadow: 0 0 0 2px #1976d240;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 2px var(--v-primary-base);
+    transform: scale(1.15);
   }
 }
 

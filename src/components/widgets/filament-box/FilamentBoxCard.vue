@@ -137,10 +137,10 @@ export default class FilamentBoxCard extends Mixins(StateMixin) {
     let boxNum = 0
     return groupSlots(this.slots).map(group => {
       if (group.external) {
-        return { ...group, label: String(this.$t('app.filament_box.label.external')) }
+        return { ...group, label: 'External Spool' }
       }
       boxNum += 1
-      return { ...group, label: String(this.$t('app.filament_box.label.box_number', { number: boxNum })) }
+      return { ...group, label: `CFS ${boxNum}` }
     })
   }
 
