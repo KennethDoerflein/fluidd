@@ -126,7 +126,18 @@ describe('FilamentBox types and helpers', () => {
         brand: 'Polymaker',
         name: 'PolyLite'
       })
-      expect(cmd).toBe('_BOX_SLOT_SET SLOT=1 MATERIAL="PLA" COLOR="#FF0000" BRAND="Polymaker" NAME="PolyLite"')
+      expect(cmd).toBe('_BOX_SLOT_SET SLOT=1 MATERIAL=PLA COLOR="#FF0000" BRAND=Polymaker NAME=PolyLite')
+
+      const cmdWithSpaces = formatSlotCommand(0, {
+        material: 'PETG HF',
+        color: '#00FF00',
+        brand: 'Bambu Lab',
+        name: 'PETG Basic'
+      }, {
+        spoolmanSupported: true,
+        spoolmanId: 42
+      })
+      expect(cmdWithSpaces).toBe('_BOX_SLOT_SET SLOT=0 MATERIAL="PETG HF" COLOR="#00FF00" BRAND="Bambu Lab" NAME="PETG Basic" SPOOLMAN_ID=42')
     })
 
     it('generates correct slot clear command for a single slot', () => {
