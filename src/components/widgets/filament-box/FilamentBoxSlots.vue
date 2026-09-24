@@ -23,6 +23,7 @@
             :load-blocked="blockPhysicalLoads && !slot.external"
             @edit="$emit('edit', $event)"
             @load="$emit('load', $event)"
+            @reset="$emit('reset', $event)"
           />
         </div>
       </section>

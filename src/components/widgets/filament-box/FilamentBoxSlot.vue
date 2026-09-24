@@ -17,12 +17,26 @@
         <span class="slot-cfs-tag font-weight-bold">{{ slotHeaderTitle }}</span>
         <span class="slot-tool-tag text-caption text--secondary font-weight-medium">T{{ slotData.index }}</span>
       </div>
-      <span
-        class="slot-token"
-        :class="slotData.state"
-      >
-        {{ stateLabel }}
-      </span>
+      <div class="slot-top-right d-flex align-center">
+        <v-btn
+          v-if="hasProfile && !slotData.loaded"
+          icon
+          x-small
+          class="slot-reset-btn mr-1"
+          :title="$t('app.filament_box.btn.reset_slot')"
+          @click.stop="$emit('reset', slotData.index)"
+        >
+          <v-icon x-small>
+            $delete
+          </v-icon>
+        </v-btn>
+        <span
+          class="slot-token"
+          :class="slotData.state"
+        >
+          {{ stateLabel }}
+        </span>
+      </div>
     </div>
     <div class="slot-material-row">
       <span
@@ -108,6 +122,14 @@ export default class FilamentBoxSlot extends Vue {
 
   get profileName (): string {
     return [this.slotData.brand, this.slotData.name].filter(Boolean).join(' · ')
+  }
+
+  get hasProfile (): boolean {
+    return (
+      (Boolean(this.slotData.material) && this.slotData.material !== '--') ||
+      Boolean(this.slotData.brand) ||
+      Boolean(this.slotData.name)
+    )
   }
 
   get slotAriaLabel (): string {
@@ -344,5 +366,18 @@ export default class FilamentBoxSlot extends Vue {
   flex: none;
   min-width: 60px;
   height: 24px !important;
+}
+
+.slot-reset-btn {
+  z-index: 2;
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
+  transition: opacity 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    opacity: 1;
+    color: var(--v-error-base) !important;
+  }
 }
 </style>

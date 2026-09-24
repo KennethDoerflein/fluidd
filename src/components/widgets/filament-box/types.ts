@@ -113,11 +113,17 @@ export interface FormattedSlot extends FilamentBoxProfile {
 }
 
 export const formatSlot = (slot: any, dataReady: boolean, spool?: any): FormattedSlot => {
-  const present = dataReady && slot.present
-  const loaded = dataReady && slot.loaded
-  const hasSnapshot = dataReady && (slot.external || present)
-  const interactive = dataReady && (slot.external || present)
-  const profile: FilamentBoxProfile = hasSnapshot
+  const present = dataReady && Boolean(slot.present)
+  const loaded = dataReady && Boolean(slot.loaded)
+  const interactive = dataReady
+  const hasProfile = Boolean(
+    (slot.material && normalizeMaterial(slot.material) !== '' && normalizeMaterial(slot.material) !== '--') ||
+    slot.brand ||
+    slot.name ||
+    slot.spoolman_id != null
+  )
+  const hasSnapshot = dataReady && (slot.external || present || hasProfile)
+  const profile: FilamentBoxProfile = hasProfile || hasSnapshot
     ? {
         material: normalizeMaterial(slot.material) || DEFAULT_PROFILE.material,
         color: normalizeColor(slot.color),
@@ -213,6 +219,10 @@ export const formatSlotCommand = (
   }
 
   return `_BOX_SLOT_SET ${params.join(' ')}`
+}
+
+export const formatSlotClearCommand = (slotIndex: number | 'ALL'): string => {
+  return `_BOX_SLOT_CLEAR SLOT=${slotIndex}`
 }
 
 export const COLOR_SWATCHES = [

@@ -32,6 +32,7 @@
           :block-physical-loads="externalSlotLoaded"
           @edit="openSlot"
           @load="loadSlot"
+          @reset="resetSlot"
         />
       </template>
       <div
@@ -50,10 +51,12 @@
       :spoolman-enabled="spoolmanEnabled"
       :material-options="materialOptions"
       @save="saveSlot"
+      @reset="resetSlot"
     />
 
     <filament-box-settings-dialog
       v-model="settingsDialogOpen"
+      @reset-all="resetAllSlots"
     />
   </collapsable-card>
 </template>
@@ -72,6 +75,7 @@ import {
   formatMaterials,
   formatMaterialCommand,
   formatSlotCommand,
+  formatSlotClearCommand,
   type FilamentBoxProfile,
   type FormattedSlot,
   type SlotGroup,
@@ -207,6 +211,14 @@ export default class FilamentBoxCard extends Mixins(StateMixin) {
     }))
     this.sendGcode(gcodes.join('\n'))
     this.slotDialogOpen = false
+  }
+
+  resetSlot (index: number) {
+    this.sendGcode(formatSlotClearCommand(index))
+  }
+
+  resetAllSlots () {
+    this.sendGcode(formatSlotClearCommand('ALL'))
   }
 }
 </script>

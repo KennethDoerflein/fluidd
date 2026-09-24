@@ -120,6 +120,40 @@
           </div>
         </div>
       </v-card-text>
+
+      <template #actions>
+        <app-btn
+          color="error"
+          text
+          type="button"
+          data-test="filament-box-slot-reset"
+          @click="handleReset"
+        >
+          <v-icon
+            left
+            small
+          >
+            $delete
+          </v-icon>
+          {{ $t('app.filament_box.btn.reset_slot') }}
+        </app-btn>
+        <v-spacer />
+        <app-btn
+          color="warning"
+          text
+          type="button"
+          @click="open = false"
+        >
+          {{ $t('app.general.btn.cancel') }}
+        </app-btn>
+        <app-btn
+          color="primary"
+          type="submit"
+          :disabled="!canSave"
+        >
+          {{ $t('app.general.btn.save') }}
+        </app-btn>
+      </template>
     </app-dialog>
 
     <filament-box-material-dialog
@@ -368,6 +402,11 @@ export default class FilamentBoxSlotDialog extends Mixins(StateMixin) {
       targetTemp: this.targetTemp == null ? null : Math.round(Number(this.targetTemp))
     }
     this.$emit('save', payload)
+    this.open = false
+  }
+
+  handleReset () {
+    this.$emit('reset', this.normalizedSlotIndex)
     this.open = false
   }
 }

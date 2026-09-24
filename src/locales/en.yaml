@@ -231,6 +231,8 @@ app:
       clear_spool: Clear spool
       load: Load
       new_material: New material
+      reset_all_slots: Reset all slots
+      reset_slot: Reset slot
       select_spool: Select spool
       unload: Unload
     color:
@@ -263,6 +265,7 @@ app:
       no_spool_selected: No Spoolman spool selected
       none: None
       printhead: Printhead
+      reset_all_slots_description: Clear all CFS and external slot profiles.
       rfid_insert_reading: Read RFID on insertion
       rfid_insert_reading_description: >-
         When a spool is inserted into the CFS, read its RFID tag once to populate its saved filament details. Filament must be unloaded.

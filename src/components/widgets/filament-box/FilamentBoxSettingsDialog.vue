@@ -61,6 +61,31 @@
           @change="setRfidStartupReading"
         />
       </app-setting>
+      <v-divider />
+      <div class="pa-4 d-flex justify-space-between align-center">
+        <div>
+          <div class="text-body-2 font-weight-bold">
+            {{ $t('app.filament_box.btn.reset_all_slots') }}
+          </div>
+          <div class="text-caption secondary--text">
+            {{ $t('app.filament_box.label.reset_all_slots_description') }}
+          </div>
+        </div>
+        <app-btn
+          color="error"
+          outlined
+          small
+          @click="resetAllSlots"
+        >
+          <v-icon
+            left
+            small
+          >
+            $delete
+          </v-icon>
+          {{ $t('app.filament_box.btn.reset_all_slots') }}
+        </app-btn>
+      </div>
     </v-card-text>
   </app-dialog>
 </template>
@@ -108,6 +133,11 @@ export default class FilamentBoxSettingsDialog extends Mixins(StateMixin) {
 
   setRfidStartupReading (val: boolean) {
     this.sendGcode(`_BOX_SET_RFID_STARTUP_READING ENABLE=${+val}`)
+  }
+
+  resetAllSlots () {
+    this.$emit('reset-all')
+    this.open = false
   }
 }
 </script>
