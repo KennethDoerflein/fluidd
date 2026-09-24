@@ -378,7 +378,7 @@ export default class CFSMatchDialog extends Vue {
 
           const slotNum = Number(s.index)
           const mat = typeof s.material === 'string' && s.material.trim() !== '' ? s.material : 'Unknown'
-          
+
           if (s.external) {
             this.physicalSlots.push({
               slot: slotNum,
@@ -397,14 +397,14 @@ export default class CFSMatchDialog extends Vue {
           }
         }
       } else if (boxStatus?.external_spool != null) {
-         // Fallback if box.slots is missing but external_spool exists
-         this.physicalSlots.push({
-            slot: typeof boxStatus.external_spool === 'number' ? boxStatus.external_spool : 4,
-            label: 'External Spool',
-            color: '#808080',
-            material: 'Unknown'
-         })
-         fetchedFromBox = true
+        // Fallback if box.slots is missing but external_spool exists
+        this.physicalSlots.push({
+          slot: typeof boxStatus.external_spool === 'number' ? boxStatus.external_spool : 4,
+          label: 'External Spool',
+          color: '#808080',
+          material: 'Unknown'
+        })
+        fetchedFromBox = true
       }
     } catch (e) {
       console.warn('[CFSMatchDialog] Box status unavailable:', e)
@@ -424,9 +424,9 @@ export default class CFSMatchDialog extends Vue {
         } else {
           // If it's an object of objects, unwrap
           for (const val of Object.values(laneData as Record<string, unknown>)) {
-             // Handle Moonraker { "lane1": { "value": { "tool": 1 } } }
-             const unwrapped = (val && typeof val === 'object' && 'value' in val) ? (val as any).value : val
-             entries.push(unwrapped)
+            // Handle Moonraker { "lane1": { "value": { "tool": 1 } } }
+            const unwrapped = (val && typeof val === 'object' && 'value' in val) ? (val as any).value : val
+            entries.push(unwrapped)
           }
         }
 
