@@ -289,6 +289,7 @@ export default class CFSMatchDialog extends Vue {
   loading = true
   slicerTools: SlicerTool[] = []
   physicalSlots: PhysicalSlot[] = []
+  externalSlot: number | null = null
 
   /** Use Record + $set for proper Vue 2 reactivity on index-keyed object */
   toolMapping: Record<number, number> = {}
@@ -403,6 +404,7 @@ export default class CFSMatchDialog extends Vue {
 
   async fetchLaneData () {
     this.physicalSlots = []
+    this.externalSlot = null
 
     let fetchedFromBox = false
 
@@ -419,6 +421,10 @@ export default class CFSMatchDialog extends Vue {
           if (typeof s !== 'object' || s == null || s.index == null) continue
 
           const slotNum = Number(s.index)
+          if (s.external === true) {
+            this.externalSlot = slotNum
+            continue
+          }
           const mat = typeof s.material === 'string' && s.material.trim() !== '' ? s.material : 'Unknown'
 
           if (!s.external && s.present) {
@@ -670,12 +676,12 @@ export default class CFSMatchDialog extends Vue {
 
   async confirmAndPrint () {
     try {
-      if (this.enableCfs && this.physicalSlots.length > 0) {
-        // Build and send the routing command
+      if (this.slicerTools.length > 0) {
         const parts: string[] = []
         for (let i = 0; i < this.slicerTools.length; i++) {
-          if (this.toolMapping[i] != null) {
-            parts.push(`T${i}=${this.toolMapping[i]}`)
+          const slot = this.enableCfs ? this.toolMapping[i] : (this.externalSlot ?? 4)
+          if (slot != null) {
+            parts.push(`T${i}=${slot}`)
           }
         }
         if (parts.length > 0) {
