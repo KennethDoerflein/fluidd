@@ -99,10 +99,6 @@
 
                 <!-- Right: physical slot selector -->
                 <div class="d-flex align-center cfs-row-right">
-                  <span
-                    class="cfs-sq mr-2"
-                    :style="{ background: getSelectedSlotColor(i) }"
-                  />
                   <v-select
                     :value="toolMapping[i]"
                     :items="physicalSlotItems"
@@ -155,22 +151,15 @@
             </div>
           </div>
 
-          <!-- ── Toggle grid ─────────────────────── -->
-          <div class="cfs-toggles mb-4">
-            <button
-              type="button"
-              class="cfs-toggle"
-              :class="{ 'cfs-toggle--on': enableCfs }"
-              @click="enableCfs = !enableCfs"
-            >
-              <v-icon
-                small
-                class="cfs-toggle-icon"
-              >
-                $retract
-              </v-icon>
-              <span class="cfs-toggle-label">Enable CFS</span>
-            </button>
+          <!-- ── Enable CFS Switch ─────────────────────── -->
+          <div class="d-flex justify-center mb-4">
+            <v-switch
+              v-model="enableCfs"
+              label="Enable CFS"
+              color="primary"
+              hide-details
+              class="mt-0 pt-0"
+            />
           </div>
 
           <!-- ── Material mismatch error ─────────── -->
@@ -789,68 +778,4 @@ export default class CFSMatchDialog extends Vue {
   background: rgba(33, 150, 243, 0.07);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Toggle grid
-// ─────────────────────────────────────────────────────────────────────────────
-
-.cfs-toggles {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-}
-
-.cfs-toggle {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 14px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  background: transparent;
-  cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
-  color: inherit;
-  font-family: inherit;
-  user-select: none;
-
-  &:focus {
-    outline: none;
-  }
-
-  &:hover {
-    border-color: rgba(255, 255, 255, 0.22);
-    background: rgba(255, 255, 255, 0.04);
-  }
-}
-
-.cfs-toggle-icon {
-  // Vuetify icon inside button inherits color correctly
-  opacity: 0.45;
-  transition: opacity 0.15s ease, color 0.15s ease;
-}
-
-.cfs-toggle-label {
-  font-size: 11px;
-  line-height: 1.25;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.55);
-  transition: color 0.15s ease;
-}
-
-// Active state — primary blue accent
-.cfs-toggle--on {
-  border-color: #42a5f5;
-  background: rgba(66, 165, 245, 0.1);
-
-  .cfs-toggle-icon {
-    color: #42a5f5 !important;
-    opacity: 1;
-  }
-
-  .cfs-toggle-label {
-    color: #42a5f5;
-  }
-}
 </style>
