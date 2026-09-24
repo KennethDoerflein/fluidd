@@ -394,13 +394,17 @@ export default class CFSMatchDialog extends Vue {
     while (types.length < colors.length) types.push('Unknown')
     while (colors.length < types.length) colors.push('#FFFFFF')
 
-    const referencedTools: number[] = Array.isArray(meta.referenced_tools)
-      ? meta.referenced_tools
-        .map((value: unknown) => Number(value))
-        .filter((index: number) => Number.isInteger(index) && index >= 0)
-      : []
-    const toolIndices: number[] = referencedTools.length > 0
-      ? Array.from(new Set<number>(referencedTools))
+    const referencedTools = this.parseNumberArray(meta.referenced_tools)
+      .filter(index => Number.isInteger(index) && index >= 0)
+    const filamentUsed = this.parseNumberArray(
+      meta.filament_used ?? meta.filament_used_mm ?? meta.filament_weights
+    )
+    const usedTools = filamentUsed
+      .map((amount, index) => amount > 0.001 ? index : -1)
+      .filter(index => index >= 0)
+    const activeTools = usedTools.length > 0 ? usedTools : referencedTools
+    const toolIndices: number[] = activeTools.length > 0
+      ? Array.from(new Set<number>(activeTools))
       : colors.map((_, index) => index)
 
     this.slicerTools = toolIndices
@@ -527,6 +531,24 @@ export default class CFSMatchDialog extends Vue {
       } catch { /* fall through */ }
     }
     return value.split(separator).map(x => x.replace(/^"|"$/g, ''))
+  }
+
+  parseNumberArray (value: unknown): number[] {
+    if (Array.isArray(value)) return value.map(Number).filter(Number.isFinite)
+    if (typeof value !== 'string' || value.trim() === '') return []
+
+    const trimmed = value.trim()
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        if (Array.isArray(parsed)) return parsed.map(Number).filter(Number.isFinite)
+      } catch { /* fall through */ }
+    }
+
+    return trimmed
+      .split(/[;,]/)
+      .map(Number)
+      .filter(Number.isFinite)
   }
 
   /** Normalize any hex color value to #RRGGBB, returning fallback for bad input. */
