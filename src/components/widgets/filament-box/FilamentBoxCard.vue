@@ -218,7 +218,11 @@ export default class FilamentBoxCard extends Mixins(StateMixin) {
   }
 
   resetAllSlots () {
-    this.sendGcode(formatSlotClearCommand('ALL'))
+    if (this.slots.length > 0) {
+      this.sendGcode(this.slots.map(s => formatSlotClearCommand(s.index)).join('\n'))
+    } else {
+      this.sendGcode(formatSlotClearCommand('ALL'))
+    }
   }
 }
 </script>

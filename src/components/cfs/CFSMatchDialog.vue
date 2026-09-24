@@ -12,6 +12,22 @@
         <span class="text-h6 font-weight-bold">Map Filaments</span>
         <v-spacer />
         <v-btn
+          v-if="enableCfs && physicalSlots.length > 0"
+          text
+          small
+          color="primary"
+          class="mr-2"
+          @click="calculateDefaults"
+        >
+          <v-icon
+            left
+            small
+          >
+            $refresh
+          </v-icon>
+          Auto-match
+        </v-btn>
+        <v-btn
           icon
           small
           @click="cancel"
@@ -52,7 +68,7 @@
 
           <!-- Description -->
           <p class="text-body-2 text--secondary mb-4">
-            Select the CFS slot or external spool to use for each tool required by the G-Code.
+            {{ enableCfs ? 'Select the CFS slot to use for each tool required by the G-Code.' : 'Manual spool mode: the external spool holder will be used for all tools.' }}
           </p>
 
           <!-- ── Mapping list (CFS enabled) ─────── -->
@@ -107,6 +123,7 @@
                     dense
                     outlined
                     hide-details
+                    placeholder="Select slot…"
                     class="cfs-select"
                     @input="updateMapping(i, $event)"
                   >
@@ -125,24 +142,6 @@
                       <span class="text-truncate">{{ item.label }}</span>
                     </template>
                   </v-select>
-                  <v-tooltip top>
-                    <template #activator="{ on, attrs }">
-                      <v-btn
-                        icon
-                        small
-                        class="ml-2 flex-shrink-0"
-                        v-bind="attrs"
-                        :disabled="toolMapping[i] == null"
-                        v-on="on"
-                        @click="clearSlotData(toolMapping[i])"
-                      >
-                        <v-icon small>
-                          $close
-                        </v-icon>
-                      </v-btn>
-                    </template>
-                    <span>Clear slot metadata</span>
-                  </v-tooltip>
                 </div>
               </div>
             </div>
@@ -201,6 +200,26 @@
             </ul>
           </v-alert>
 
+          <!-- ── Unmapped tools warning ─────────── -->
+          <v-alert
+            v-if="enableCfs && !allToolsMapped"
+            type="warning"
+            dense
+            class="mb-3"
+          >
+            Please select a CFS slot for each tool before starting the print.
+          </v-alert>
+
+          <!-- ── Shared slots note ─────────── -->
+          <v-alert
+            v-if="enableCfs && allToolsMapped && hasSharedSlots"
+            type="info"
+            dense
+            class="mb-3"
+          >
+            Multiple tools are mapped to the same CFS slot. Those tools will print using that slot's filament.
+          </v-alert>
+
           <!-- ── Flush volume note ───────────────── -->
           <v-alert
             type="info"
@@ -225,7 +244,7 @@
         </v-btn>
         <v-btn
           color="success"
-          :disabled="loading || materialMismatches.length > 0"
+          :disabled="!canConfirm"
           @click="confirmAndPrint"
         >
           <v-icon
@@ -307,6 +326,22 @@ export default class CFSMatchDialog extends Vue {
       }
     }
     return out
+  }
+
+  get allToolsMapped (): boolean {
+    if (!this.enableCfs) return true
+    if (this.slicerTools.length === 0) return true
+    return this.slicerTools.every((_, i) => this.toolMapping[i] != null && this.toolMapping[i] !== undefined)
+  }
+
+  get hasSharedSlots (): boolean {
+    if (!this.enableCfs || this.slicerTools.length <= 1) return false
+    const values = Object.values(this.toolMapping).filter(v => v != null && v !== undefined)
+    return new Set(values).size < values.length
+  }
+
+  get canConfirm (): boolean {
+    return !this.loading && this.allToolsMapped && this.materialMismatches.length === 0
   }
 
   // ─── Lifecycle ──────────────────────────────────────────────────────────────
@@ -545,11 +580,12 @@ export default class CFSMatchDialog extends Vue {
   }
 
   /**
-   * 4-tier auto-mapping algorithm (runs on dialog open):
+   * Auto-mapping algorithm (runs on dialog open or when user clicks Auto-match):
    *   1. Perfect match  — same material AND near-identical color (dist < 10)
    *   2. Type match     — same material, pick closest color
    *   3. Color match    — closest color regardless of material
-   *   4. Fallback       — first available slot
+   *   4. Fallback       — first available unused slot
+   *   5. Shared fallback — when distinct slots are exhausted, reuse best matching slot
    */
   calculateDefaults () {
     const newMapping: Record<number, number> = {}
@@ -595,9 +631,26 @@ export default class CFSMatchDialog extends Vue {
         }
       }
 
-      // 4. Fallback: first remaining slot
+      // 4. Fallback: first remaining unused slot
       if (bestSlot === null && available.length > 0) {
         bestSlot = available[0].slot
+      }
+
+      // 5. Shared slot fallback: when distinct slots are exhausted,
+      // reuse the best matching slot from all loaded physical slots
+      if (bestSlot === null && this.physicalSlots.length > 0) {
+        const matMatches = this.physicalSlots.filter(ps =>
+          this.materialCompatible(tool.material, ps.material)
+        )
+        const pool = matMatches.length > 0 ? matMatches : this.physicalSlots
+        let bestDist = Infinity
+        for (const ps of pool) {
+          const d = this.colorDistance(toolRgb, this.hexToRgb(ps.color))
+          if (d < bestDist) {
+            bestDist = d
+            bestSlot = ps.slot
+          }
+        }
       }
 
       if (bestSlot !== null) {
@@ -613,22 +666,6 @@ export default class CFSMatchDialog extends Vue {
 
   cancel () {
     this.$emit('input', false)
-  }
-
-  async clearSlotData (slotId: number) {
-    if (slotId == null) return
-    try {
-      this.loading = true
-      await SocketActions.printerGcodeScript(`_BOX_SLOT_CLEAR SLOT=${slotId}`)
-      // Short delay for Klipper state to update, then refresh the lane data
-      setTimeout(() => {
-        this.loadData()
-      }, 300)
-    } catch (e) {
-      console.error('[CFSMatchDialog] Failed to clear slot:', e)
-    } finally {
-      this.loading = false
-    }
   }
 
   async confirmAndPrint () {

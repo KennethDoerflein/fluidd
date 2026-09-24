@@ -97,7 +97,7 @@ export default class FilamentBoxSlots extends Vue {
 
 .slot-groups {
   display: grid;
-  grid-template-columns: minmax(112px, 0.85fr) minmax(0, 4fr);
+  grid-template-columns: minmax(132px, 0.95fr) minmax(0, 4fr);
   align-items: start;
   gap: 8px;
 
@@ -106,7 +106,7 @@ export default class FilamentBoxSlots extends Vue {
   }
 
   &.narrow {
-    grid-template-columns: minmax(96px, 0.72fr) minmax(0, 2fr);
+    grid-template-columns: minmax(120px, 0.85fr) minmax(0, 2fr);
 
     &.without-external {
       grid-template-columns: minmax(0, 1fr);
@@ -153,6 +153,7 @@ export default class FilamentBoxSlots extends Vue {
   font-size: 0.7rem;
   line-height: 1.2;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .slots-grid {

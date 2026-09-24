@@ -231,6 +231,7 @@ app:
       clear_spool: Clear spool
       load: Load
       new_material: New material
+      reset: Reset
       reset_all_slots: Reset all slots
       reset_slot: Reset slot
       select_spool: Select spool

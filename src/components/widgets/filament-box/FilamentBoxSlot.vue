@@ -17,26 +17,12 @@
         <span class="slot-cfs-tag font-weight-bold">{{ slotHeaderTitle }}</span>
         <span class="slot-tool-tag text-caption text--secondary font-weight-medium">T{{ slotData.index }}</span>
       </div>
-      <div class="slot-top-right d-flex align-center">
-        <v-btn
-          v-if="hasProfile && !slotData.loaded"
-          icon
-          x-small
-          class="slot-reset-btn mr-1"
-          :title="$t('app.filament_box.btn.reset_slot')"
-          @click.stop="$emit('reset', slotData.index)"
-        >
-          <v-icon x-small>
-            $delete
-          </v-icon>
-        </v-btn>
-        <span
-          class="slot-token"
-          :class="slotData.state"
-        >
-          {{ stateLabel }}
-        </span>
-      </div>
+      <span
+        class="slot-token"
+        :class="slotData.state"
+      >
+        {{ stateLabel }}
+      </span>
     </div>
     <div class="slot-material-row">
       <span
@@ -67,8 +53,8 @@
         </div>
       </div>
       <v-btn
-        v-if="!slotData.loaded && !loadBlocked"
-        class="slot-load-btn"
+        v-if="canLoad"
+        class="slot-action-btn load"
         x-small
         outlined
         color="primary"
@@ -82,6 +68,24 @@
           $mmuLoad
         </v-icon>
         {{ $t('app.filament_box.btn.load') }}
+      </v-btn>
+      <v-btn
+        v-else-if="canReset"
+        class="slot-action-btn reset"
+        x-small
+        outlined
+        color="error"
+        data-test="filament-box-slot-reset"
+        :title="$t('app.filament_box.btn.reset_slot')"
+        @click.stop="$emit('reset', slotData.index)"
+      >
+        <v-icon
+          left
+          x-small
+        >
+          $delete
+        </v-icon>
+        {{ $t('app.filament_box.btn.reset') }}
       </v-btn>
     </div>
   </article>
@@ -103,7 +107,7 @@ export default class FilamentBoxSlot extends Vue {
     if (this.slotData.external) {
       return 'Ext'
     }
-    return `CFS ${String.fromCharCode(65 + (this.slotData.index % 4))}`
+    return `CFS\u00A0${String.fromCharCode(65 + (this.slotData.index % 4))}`
   }
 
   get slotClasses () {
@@ -130,6 +134,20 @@ export default class FilamentBoxSlot extends Vue {
       Boolean(this.slotData.brand) ||
       Boolean(this.slotData.name)
     )
+  }
+
+  get canLoad (): boolean {
+    return (
+      !this.slotData.loaded &&
+      !this.loadBlocked &&
+      this.slotData.state === 'ready' &&
+      this.slotData.material !== '--' &&
+      this.slotData.material !== ''
+    )
+  }
+
+  get canReset (): boolean {
+    return !this.slotData.loaded && this.hasProfile && this.slotData.state === 'unloaded'
   }
 
   get slotAriaLabel (): string {
@@ -204,27 +222,32 @@ export default class FilamentBoxSlot extends Vue {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
 }
 
 .slot-title-wrap {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .slot-cfs-tag {
   font-size: 0.8rem;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .slot-tool-tag {
   font-size: 0.7rem;
+  white-space: nowrap;
 }
 
 .slot-token {
-  max-width: 86px;
+  flex-shrink: 0;
   padding: 2px 7px;
   font-size: 0.62rem;
   font-weight: 700;
@@ -361,23 +384,19 @@ export default class FilamentBoxSlot extends Vue {
   }
 }
 
-.slot-load-btn {
+.slot-action-btn {
   z-index: 2;
   flex: none;
-  min-width: 60px;
   height: 24px !important;
-}
 
-.slot-reset-btn {
-  z-index: 2;
-  width: 20px;
-  height: 20px;
-  opacity: 0.6;
-  transition: opacity 0.15s ease, color 0.15s ease;
+  &.load {
+    min-width: 60px;
+  }
 
-  &:hover {
-    opacity: 1;
-    color: var(--v-error-base) !important;
+  &.reset {
+    min-width: 0;
+    padding: 0 6px !important;
+    font-size: 0.68rem;
   }
 }
 </style>

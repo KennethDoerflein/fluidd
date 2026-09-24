@@ -131,9 +131,18 @@ export const formatSlot = (slot: any, dataReady: boolean, spool?: any): Formatte
         name: slot.name ?? ''
       }
     : DEFAULT_PROFILE
-  const state: 'loaded' | 'ready' | 'unloaded' | 'unknown' = dataReady
-    ? (loaded ? 'loaded' : (slot.external || present) ? 'ready' : 'unloaded')
-    : 'unknown'
+  let state: 'loaded' | 'ready' | 'unloaded' | 'unknown' = 'unknown'
+  if (dataReady) {
+    if (loaded) {
+      state = 'loaded'
+    } else if (slot.external) {
+      state = hasProfile ? 'ready' : 'unloaded'
+    } else if (present) {
+      state = 'ready'
+    } else {
+      state = 'unloaded'
+    }
+  }
 
   return {
     ...profile,
