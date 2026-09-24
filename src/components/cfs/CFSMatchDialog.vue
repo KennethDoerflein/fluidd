@@ -171,56 +171,7 @@
               </v-icon>
               <span class="cfs-toggle-label">Enable CFS</span>
             </button>
-
-            <button
-              type="button"
-              class="cfs-toggle"
-              :class="{ 'cfs-toggle--on': enableCalibration }"
-              @click="enableCalibration = !enableCalibration"
-            >
-              <v-icon
-                small
-                class="cfs-toggle-icon"
-              >
-                $tune
-              </v-icon>
-              <span class="cfs-toggle-label">Print Calibration</span>
-            </button>
-
-            <button
-              type="button"
-              class="cfs-toggle"
-              :class="{ 'cfs-toggle--on': enableTimelapse }"
-              @click="onTimelapseToggle"
-            >
-              <v-icon
-                small
-                class="cfs-toggle-icon"
-              >
-                $camera
-              </v-icon>
-              <span class="cfs-toggle-label">Record Timelapse</span>
-            </button>
           </div>
-
-          <!-- ── Timelapse warnings ───────────────── -->
-          <v-alert
-            v-if="enableTimelapse && layerCount > 0 && layerCount < 30"
-            type="warning"
-            dense
-            class="mb-3"
-          >
-            Only <strong>{{ layerCount }}</strong> layers detected — timelapse results will be very short.
-            Consider disabling timelapse for this print.
-          </v-alert>
-          <v-alert
-            v-else-if="enableTimelapse && layerCount > 0 && layerCount < 35"
-            type="warning"
-            dense
-            class="mb-3"
-          >
-            Low layer count (<strong>{{ layerCount }}</strong> layers) — timelapse quality may be poor.
-          </v-alert>
 
           <!-- ── Material mismatch error ─────────── -->
           <v-alert
@@ -317,11 +268,8 @@ export default class CFSMatchDialog extends Vue {
   toolMapping: Record<number, number> = {}
 
   thumbnailUrl: string | null = null
-  layerCount = 0
 
   enableCfs = true
-  enableCalibration = false
-  enableTimelapse = false
 
   // ─── Computed ──────────────────────────────────────────────────────────────
 
@@ -407,9 +355,6 @@ export default class CFSMatchDialog extends Vue {
       material: types[i] || 'Unknown'
     }))
 
-    // Layer count (for timelapse warning)
-    this.layerCount = typeof meta.layer_count === 'number' ? meta.layer_count : 0
-
     // Thumbnail — largest available
     this.thumbnailUrl = this.buildThumbnailUrl(this.filename, meta.thumbnails)
   }
@@ -417,53 +362,92 @@ export default class CFSMatchDialog extends Vue {
   async fetchLaneData () {
     this.physicalSlots = []
 
-    // CFS lane data from Moonraker database
-    try {
-      const resp = await fetch('/server/database/item?namespace=lane_data')
-      const json = await resp.json() as any
-      const laneData = json.result?.value ?? json.result ?? {}
+    let fetchedFromBox = false
 
-      const entries: unknown[] = Array.isArray(laneData)
-        ? laneData
-        : Object.values(laneData as Record<string, unknown>)
-
-      for (const lane of entries) {
-        const l = lane as Record<string, unknown>
-        if (l == null || typeof l !== 'object' || l.tool == null) continue
-
-        const slotNum = Number(l.tool)
-        const mat = typeof l.material === 'string' ? l.material : 'Unknown'
-        // CFS slots labeled A, B, C, D... (0→A, 1→B, etc.)
-        const letter = slotNum < 26
-          ? String.fromCharCode(65 + slotNum)
-          : String(slotNum)
-
-        this.physicalSlots.push({
-          slot: slotNum,
-          label: `CFS ${letter} (${mat})`,
-          color: this.normalizeHex(l.color_hex),
-          material: mat
-        })
-      }
-    } catch (e) {
-      console.warn('[CFSMatchDialog] Lane data unavailable:', e)
-    }
-
-    // External spool from printer objects
+    // 1. Try fetching native CFS box status first (K2 Custom Firmware box.py)
     try {
       const resp = await fetch('/printer/objects/query?box')
       const json = await resp.json() as any
-      const box = json.result?.status?.box
-      if (box?.external_spool != null) {
-        this.physicalSlots.push({
-          slot: typeof box.external_spool === 'number' ? box.external_spool : 4,
-          label: 'External Spool',
-          color: '#808080',
-          material: 'Unknown'
-        })
+      const boxStatus = json.result?.status?.box
+      const slots = boxStatus?.slots
+
+      if (Array.isArray(slots) && slots.length > 0) {
+        fetchedFromBox = true
+        for (const s of slots) {
+          if (typeof s !== 'object' || s == null || s.index == null) continue
+
+          const slotNum = Number(s.index)
+          const mat = typeof s.material === 'string' && s.material.trim() !== '' ? s.material : 'Unknown'
+          
+          if (s.external) {
+            this.physicalSlots.push({
+              slot: slotNum,
+              label: 'External Spool',
+              color: this.normalizeHex(s.color),
+              material: mat
+            })
+          } else {
+            const letter = slotNum < 26 ? String.fromCharCode(65 + slotNum) : String(slotNum)
+            this.physicalSlots.push({
+              slot: slotNum,
+              label: `CFS ${letter} (${mat})`,
+              color: this.normalizeHex(s.color),
+              material: mat
+            })
+          }
+        }
+      } else if (boxStatus?.external_spool != null) {
+         // Fallback if box.slots is missing but external_spool exists
+         this.physicalSlots.push({
+            slot: typeof boxStatus.external_spool === 'number' ? boxStatus.external_spool : 4,
+            label: 'External Spool',
+            color: '#808080',
+            material: 'Unknown'
+         })
+         fetchedFromBox = true
       }
-    } catch {
-      // External spool may not exist
+    } catch (e) {
+      console.warn('[CFSMatchDialog] Box status unavailable:', e)
+    }
+
+    // 2. If no box data, fall back to Moonraker lane_data
+    if (!fetchedFromBox) {
+      try {
+        const resp = await fetch('/server/database/item?namespace=lane_data')
+        const json = await resp.json() as any
+        const laneData = json.result?.value ?? json.result ?? {}
+
+        // In Moonraker DB, item values are often wrapped in `.value`
+        let entries: unknown[] = []
+        if (Array.isArray(laneData)) {
+          entries = laneData
+        } else {
+          // If it's an object of objects, unwrap
+          for (const val of Object.values(laneData as Record<string, unknown>)) {
+             // Handle Moonraker { "lane1": { "value": { "tool": 1 } } }
+             const unwrapped = (val && typeof val === 'object' && 'value' in val) ? (val as any).value : val
+             entries.push(unwrapped)
+          }
+        }
+
+        for (const lane of entries) {
+          const l = lane as Record<string, unknown>
+          if (l == null || typeof l !== 'object' || l.tool == null) continue
+
+          const slotNum = Number(l.tool)
+          const mat = typeof l.material === 'string' && l.material.trim() !== '' ? l.material : 'Unknown'
+          const letter = slotNum < 26 ? String.fromCharCode(65 + slotNum) : String(slotNum)
+
+          this.physicalSlots.push({
+            slot: slotNum,
+            label: `CFS ${letter} (${mat})`,
+            color: this.normalizeHex(l.color_hex),
+            material: mat
+          })
+        }
+      } catch (e) {
+        console.warn('[CFSMatchDialog] Lane data unavailable:', e)
+      }
     }
 
     this.physicalSlots.sort((a, b) => a.slot - b.slot)
@@ -631,14 +615,6 @@ export default class CFSMatchDialog extends Vue {
     this.toolMapping = newMapping
   }
 
-  // ─── Toggle Handlers ───────────────────────────────────────────────────────
-
-  onTimelapseToggle () {
-    this.enableTimelapse = !this.enableTimelapse
-    // Keep the warning visible rather than auto-disabling —
-    // the user is informed and can make the final call.
-  }
-
   // ─── Actions ───────────────────────────────────────────────────────────────
 
   cancel () {
@@ -658,10 +634,6 @@ export default class CFSMatchDialog extends Vue {
         if (parts.length > 0) {
           await SocketActions.printerGcodeScript(`BOX_SET_ROUTING ${parts.join(' ')}`)
         }
-      }
-
-      if (this.enableCalibration) {
-        await SocketActions.printerGcodeScript('PRINT_CALIBRATION')
       }
 
       await SocketActions.printerPrintStart(this.filename)
@@ -823,7 +795,7 @@ export default class CFSMatchDialog extends Vue {
 
 .cfs-toggles {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   gap: 8px;
 }
 
