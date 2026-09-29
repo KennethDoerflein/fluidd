@@ -194,4 +194,27 @@ export default class FilamentBoxSlots extends Vue {
 .runout-arrow {
   color: var(--v-secondary-lighten2);
 }
+
+@media (max-width: 600px) {
+  .slot-groups {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .slot-group.external {
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .slot-group.external:after {
+    display: none;
+  }
+
+  .slot-group:not(.external) {
+    grid-column: 1 !important;
+  }
+
+  .slot-group:not(.external) .slots-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
 </style>

@@ -504,4 +504,14 @@ export default class FilamentBoxStatus extends Vue {
   min-width: 72px;
   height: 24px !important;
 }
+
+@media (max-width: 600px) {
+  .load-path-diagram {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 12px;
+  }
+  .load-path-actions {
+    margin-top: 6px;
+  }
+}
 </style>
