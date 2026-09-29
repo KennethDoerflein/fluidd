@@ -23,6 +23,7 @@
           :box="box"
           :printhead-detected="printheadDetected"
           :can-unload="canUnload"
+          :narrow="narrow"
           @unload="unload"
         />
         <filament-box-slots

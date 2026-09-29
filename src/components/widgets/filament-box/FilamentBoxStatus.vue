@@ -77,7 +77,10 @@
       </v-chip>
     </div>
 
-    <div class="load-path-diagram">
+    <div
+      class="load-path-diagram"
+      :class="{ narrow }"
+    >
       <div
         class="path-node source"
         :class="{ active: sourceActive }"
@@ -162,6 +165,9 @@ export default class FilamentBoxStatus extends Vue {
 
   @Prop({ type: Boolean, required: true })
   readonly canUnload!: boolean
+
+  @Prop({ type: Boolean, default: false })
+  readonly narrow!: boolean
 
   get dataReady (): boolean {
     return this.box?.data_ready === true
@@ -505,13 +511,12 @@ export default class FilamentBoxStatus extends Vue {
   height: 24px !important;
 }
 
-@media (max-width: 600px) {
-  .load-path-diagram {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    row-gap: 12px;
-  }
-  .load-path-actions {
-    margin-top: 6px;
-  }
+.load-path-diagram.narrow {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  row-gap: 12px;
+}
+
+.load-path-diagram.narrow .load-path-actions {
+  margin-top: 6px;
 }
 </style>
