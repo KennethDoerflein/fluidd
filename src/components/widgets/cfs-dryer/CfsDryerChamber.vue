@@ -33,7 +33,10 @@
 
       <div class="timer-readout">
         <div class="timer-label text-caption text--secondary">
-          <v-icon x-small left>
+          <v-icon
+            x-small
+            left
+          >
             $clock
           </v-icon>
           {{ $t('app.cfs_dryer.label.remaining') }}

@@ -163,7 +163,7 @@ export default class Dashboard extends Mixins(StateMixin) {
   }
 
   get supportsCfsDryer (): boolean {
-    return Boolean(this.$typedState.printer.printer.box?.dryer?.supported)
+    return this.$typedState.printer.printer.box?.dryer != null
   }
 
   get hasMacros (): boolean {

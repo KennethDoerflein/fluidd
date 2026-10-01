@@ -49,7 +49,10 @@
             class="status-chip ac-chip"
             :class="{ connected: acConnected, disconnected: !acConnected }"
           >
-            <v-icon x-small left>
+            <v-icon
+              x-small
+              left
+            >
               {{ acConnected ? '$check' : '$alert' }}
             </v-icon>
             <span class="status-chip-label">{{ $t('app.cfs_dryer.label.ac_power') }}</span>

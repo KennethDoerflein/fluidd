@@ -37,7 +37,10 @@
         :title="$t('app.cfs_dryer.label.humidity_threshold')"
         :sub-title="$t('app.cfs_dryer.label.humidity_threshold_description')"
       >
-        <div class="d-flex align-center" style="max-width: 140px;">
+        <div
+          class="d-flex align-center"
+          style="max-width: 140px;"
+        >
           <v-slider
             v-model="localThreshold"
             :min="10"
