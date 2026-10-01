@@ -312,6 +312,42 @@ app:
       known_material: Select a material from the catalog
       required: Required
       temperature_range: Enter a temperature from 170°C to 350°C
+  cfs_dryer:
+    btn:
+      start: Start Drying
+      pause: Pause
+      resume: Resume
+      stop: Stop All
+    label:
+      ac_power: AC Power
+      left_chamber: Left Chamber
+      right_chamber: Right Chamber
+      target: Target
+      remaining: Remaining
+      presets: Material Presets
+      chamber: Chamber
+      both: Both
+      left: Left (CH0)
+      right: Right (CH1)
+      temp: Target Temp
+      duration: Duration
+      auto_dry: Auto-Dry After Print
+      auto_dry_description: Automatically start a 4-hour 50°C drying cycle when a print completes.
+      auto_humidity: Auto-Humidity Control
+      auto_humidity_description: Automatically start drying when CFS chamber humidity exceeds threshold.
+      humidity_threshold: Humidity Threshold
+      humidity_threshold_description: Humidity level at which automatic drying activates.
+    msg:
+      ac_disconnected: Mains AC power cord is disconnected. Plug in AC power to enable chamber heating.
+    state:
+      connected: Connected
+      disconnected: Disconnected
+      heating: Heating
+      idle: Idle
+      not_detected: CFS Dryer not detected. Ensure CFS Pro is connected and powered.
+    title:
+      cfs_dryer: CFS Dryer
+      settings: CFS Dryer Settings
   gcode:
     btn:
       load_current_file: Load Current File

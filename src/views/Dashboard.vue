@@ -56,6 +56,7 @@ import RunoutSensorsCard from '@/components/widgets/runout-sensors/RunoutSensors
 import BeaconCard from '@/components/widgets/beacon/BeaconCard.vue'
 import AfcCard from '@/components/widgets/afc/AfcCard.vue'
 import FilamentBoxCard from '@/components/widgets/filament-box/FilamentBoxCard.vue'
+import CfsDryerCard from '@/components/widgets/cfs-dryer/CfsDryerCard.vue'
 import type Sortable from 'sortablejs'
 
 @Component({
@@ -79,7 +80,8 @@ import type Sortable from 'sortablejs'
     RunoutSensorsCard,
     BeaconCard,
     AfcCard,
-    FilamentBoxCard
+    FilamentBoxCard,
+    CfsDryerCard
   }
 })
 export default class Dashboard extends Mixins(StateMixin) {
@@ -158,6 +160,10 @@ export default class Dashboard extends Mixins(StateMixin) {
 
   get supportsFilamentBox (): boolean {
     return this.$typedState.printer.printer.box?.api_version === 1
+  }
+
+  get supportsCfsDryer (): boolean {
+    return Boolean(this.$typedState.printer.printer.box?.dryer?.supported)
   }
 
   get hasMacros (): boolean {
@@ -244,6 +250,7 @@ export default class Dashboard extends Mixins(StateMixin) {
     if (item.id === 'temperature-card' && !this.hasHeatersOrTemperatureSensors) return true
     if (item.id === 'afc-card' && !this.supportsAfc) return true
     if (item.id === 'filament-box-card' && !this.supportsFilamentBox) return true
+    if (item.id === 'cfs-dryer-card' && !this.supportsCfsDryer) return true
 
     // Otherwise return the opposite of whatever the enabled state is.
     return !item.enabled
