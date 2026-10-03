@@ -344,7 +344,7 @@ app:
       disconnected: Disconnected
       heating: Heating
       idle: Idle
-      not_detected: CFS Dryer not detected. Ensure CFS Pro is connected and powered.
+      not_detected: CFS Dryer not detected. Ensure CFS Pro or Dryer Add-on is connected and powered.
     title:
       cfs_dryer: CFS Dryer
       settings: CFS Dryer Settings
